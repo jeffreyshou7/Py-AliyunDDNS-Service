@@ -17,13 +17,24 @@ class JsonConf:
 
     def load(self):
         if not os.path.exists(AppGlobal.getAppPath() + '/' + self.config_file):
-            with open(AppGlobal.getAppPath() + '/' + self.config_file, 'w') as json_file:
+            with open(AppGlobal.getAppPath() + '/' + self.config_file, 'w', encoding='utf-8') as json_file:
                 pass       
-        with open(AppGlobal.getAppPath() + '/' + self.config_file) as json_file:
+        with open(AppGlobal.getAppPath() + '/' + self.config_file, encoding='utf-8') as json_file:
             try:
                 data = json.load(json_file)
             except:
-                data = {}
+                data = {
+                    "interval": "60",
+                    "last_ip": "",
+                    "last_update":"",
+                    "RecordId":"",
+                    "switch":False,
+                    "access_key_id":"",
+                    "access_Key_secret":"",
+                    "region_id":"",
+                    "access_token":""
+                    }
+                self.store(data)
             return data
         
    

@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import re
 import LibWaakii.AppLoggerLite as AppLogger
 import time
-import LibWaakii.AppGlobal as AppGlobal
 import LibWaakii.AppConfig as AppConfig
 
 class IpAddress(object):
@@ -19,13 +18,13 @@ class IpAddress(object):
                 sHtmlContent = oContent.text
                 ip = sHtmlContent[sHtmlContent.find("[") + 1: sHtmlContent.find("]")]
                 
-                AppLogger.StandLogger.infoLog('取得外网IP成功,ip地址为(' + ip + ')')
+                # AppLogger.StandLogger.infoLog('取得外网IP成功,ip地址为(' + ip + ')')
 
                 AppConfig.JsonConf().set({'last_ip':ip})
                 
                 return ip
             else:
-                AppLogger.StandLogger.warningLog('取得外网IP失败，可能原因（网络未连接）')
+                # AppLogger.StandLogger.warningLog('取得外网IP失败，可能原因（网络未连接）')
                 return None
         except:
             return None
