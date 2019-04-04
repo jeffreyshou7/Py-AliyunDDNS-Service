@@ -105,3 +105,5 @@ venv.bak/
 
 # private info
 config.json
+
+app.log
