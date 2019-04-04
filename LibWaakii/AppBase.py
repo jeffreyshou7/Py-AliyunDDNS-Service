@@ -1,9 +1,10 @@
 #-*- coding:utf-8 -*-
 import sys
 
-def appExit(callback_proc = None,callback_args = None,message = 'app is exit now',type_exit = 0):
+def appExit(message = 'app is exit now',type_exit = 0,callback_proc = None,callback_args = None):
     try:
         sys.exit(type_exit)
     except SystemExit:
-        callback_proc(*callback_args)
+        if callback_proc != None:
+            callback_proc(*callback_args)
         print(message)

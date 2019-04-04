@@ -23,17 +23,7 @@ class JsonConf:
             try:
                 data = json.load(json_file)
             except:
-                data = {
-                    "interval": "60",
-                    "last_ip": "",
-                    "last_update":"",
-                    "RecordId":"",
-                    "switch":False,
-                    "access_key_id":"",
-                    "access_Key_secret":"",
-                    "region_id":"",
-                    "access_token":""
-                    }
+                data = AppGlobal.getDefaultConfig()
                 self.store(data)
             return data
         

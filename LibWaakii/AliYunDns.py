@@ -35,12 +35,15 @@ class DNSWorker(object):
         self.region_id = region_id
         self.domain_name = domain_name
         
-        self.client = AcsClient(
-            self.access_key_id,
-            self.access_key_secret,
-            self.region_id
-        )
-        self.record = self.getAliyunDnsRecord()
+        try:
+            self.client = AcsClient(
+                self.access_key_id,
+                self.access_key_secret,
+                self.region_id
+            )
+            self.record = self.getAliyunDnsRecord()
+        except:
+            self.record = None
 
     def getAliyunDnsRecord(self):
         try:
@@ -52,7 +55,6 @@ class DNSWorker(object):
             # request.set_RRKeyWord(self.rr_keyword)
             request.set_TypeKeyWord(self.record_type)
             r = self.client.do_action_with_exception(request)
-            pass
             return json.loads(r)
         except:
             return None
