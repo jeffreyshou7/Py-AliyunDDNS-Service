@@ -15,12 +15,14 @@ from LibWaakii import AppBase
 from LibWaakii import TimerWorker
 import json
 import LibWaakii.AliYunDns as DDNS
+import time
 
 class Worker(object):
 
     _cfg = {}
     _region_id = 'cn-hangzhou'
     _last_ip = None
+    _retry = 5
     #_DDNS = object
     #_TimerWorker = object 
 
@@ -32,7 +34,7 @@ class Worker(object):
             AppLogger.StandLogger.infoLog('与阿里云API服务通信成功！')
             return True
         else:
-            AppLogger.StandLogger.infoLog('与阿里云API服务通信失败，请检查AppID/Key后重新启动服务,系统将自动退出！')
+            AppLogger.StandLogger.infoLog('与阿里云API服务通信失败，请检查AppID/Key或网络连接')
             return False
 
     @classmethod
@@ -80,21 +82,26 @@ class Worker(object):
                 AppLogger.StandLogger.warningLog('获取外网IP失败，网络连接有故障，请检查')
                 return False
 
-            cls._last_ip = sGatewayIp
+            if sRRIp == sGatewayIp:
+                AppLogger.StandLogger.infoLog('(系统初始化)IP地址无变化')
+                cls._last_ip = sGatewayIp
 
-            if sGatewayIp != sCfgIp:
-                AppConfig.JsonConf().set({'last_ip':sGatewayIp})
-                AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-
-            if sRRIp == sGatewayIp:       
+                if sGatewayIp != sCfgIp:
+                    AppConfig.JsonConf().set({'last_ip':sGatewayIp})
+                    AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})                
                 return True
             else:
                 bUpdated = cls._DDNS.update_record(cls._cfg['rr'],sGatewayIp)
 
                 if True == bUpdated:
-                    AppLogger.StandLogger.infoLog('网关IP已变化，在系统初始化中已通过阿里云API成功更新')
+                    AppLogger.StandLogger.infoLog('(系统初始化)网关IP已变化，已通过阿里云API成功更新')
+                    cls._last_ip = sGatewayIp
+
+                    if sGatewayIp != sCfgIp:
+                        AppConfig.JsonConf().set({'last_ip':sGatewayIp})
+                        AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})                    
                 else:
-                    AppLogger.StandLogger.warningLog('网关IP已变化，但通过阿里云API失败')
+                    AppLogger.StandLogger.warningLog('(系统初始化)网关IP已变化，但通过阿里云API失败')
 
                 return bUpdated
         else:
@@ -114,26 +121,38 @@ class Worker(object):
     @classmethod
     def ScheduleWork(cls):
         print(datetime.now())
-        if False == cls._is_inited:
+
+        while cls._retry > 0 and False == cls._is_inited:
+            
             AppLogger.StandLogger.infoLog('系统再次尝试初始化工作')
             cls._is_inited = cls.WorkerInit()
+            if False == cls._is_inited:
+                cls._retry -= 1
+                AppLogger.StandLogger.infoLog('系统将等待({second_}妙,将再重试{times_})再次尝试初始化工作'.format(second_ = 10,times = cls._retry))
+                time.sleep(10)
+        cls._retry = 5
         pass
 
         if True == cls._is_inited:
             sGatewayIp = cls.getGatewayIP()
             if sGatewayIp != cls._last_ip:
-                cls._last_ip = sGatewayIp
-                AppConfig.JsonConf().set({'last_ip':sGatewayIp})
-                AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-                
-                bUpdated = cls._DDNS.update_record(cls._cfg['rr'],sGatewayIp)
+                bRc = cls.resetDDNS()
 
-                if True == bUpdated:
-                    AppLogger.StandLogger.infoLog('网关IP已变化，已通过阿里云API成功更新')
+                if True == bRc:
+                    bUpdated = cls._DDNS.update_record(cls._cfg['rr'],sGatewayIp)
+
+                    if True == bUpdated:
+                        AppLogger.StandLogger.infoLog('(系统轮询)网关IP已变化，已通过阿里云API成功更新')
+
+                        cls._last_ip = sGatewayIp
+                        AppConfig.JsonConf().set({'last_ip':sGatewayIp})
+                        AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})                    
+                    else:
+                        AppLogger.StandLogger.warningLog('(系统轮询)网关IP已变化，但通过阿里云API成功失败')
                 else:
-                    AppLogger.StandLogger.warningLog('网关IP已变化，但通过阿里云API成功失败')
+                    AppLogger.StandLogger.warningLog('(系统轮询)与阿里云API服务通信失败，请检查AppID/KeyKey或网络连接！')
             else:
-                AppLogger.StandLogger.infoLog('网关IP无变化！')
+                AppLogger.StandLogger.infoLog('(系统轮询)网关IP无变化！')
         '''     
         dicAliDnsRecord = cls._DDNS.get_record_value(cls._cfg['rr'])
         if dicAliDnsRecord != None:
