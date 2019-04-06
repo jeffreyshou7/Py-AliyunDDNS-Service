@@ -80,11 +80,11 @@ class Worker(object):
             sCfgIp = cls.getCfgLastIp()
 
             if None == sGatewayIp:
-                AppLogger.StandLogger.warningLog('获取外网IP失败，网络连接有故障，请检查')
+                AppLogger.StandLogger.debugLog('获取外网IP失败，网络连接有故障，请检查')
                 return False
 
             if sRRIp == sGatewayIp:
-                AppLogger.StandLogger.infoLog('(系统初始化)IP地址无变化')
+                AppLogger.StandLogger.debugLog('(系统初始化)IP地址无变化')
                 cls._last_ip = sGatewayIp
 
                 if sGatewayIp != sCfgIp:
@@ -95,12 +95,12 @@ class Worker(object):
                 bUpdated = cls._DDNS.update_record(cls._cfg['rr'],sGatewayIp)
 
                 if True == bUpdated:
-                    AppLogger.StandLogger.infoLog('(系统初始化)网关IP已变化，已通过阿里云API成功更新')
+                    AppLogger.StandLogger.infoLog('(系统初始化)网关IP已变化，已通过阿里云API成功更新(ip地址为:{ip_})'.format(ip_=sGatewayIp))
                     cls._last_ip = sGatewayIp
 
-                    if sGatewayIp != sCfgIp:
-                        AppConfig.JsonConf().set({'last_ip':sGatewayIp})
-                        AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})                    
+                    #if sGatewayIp != sCfgIp:
+                    AppConfig.JsonConf().set({'last_ip':sGatewayIp})
+                    AppConfig.JsonConf().set({'last_update':datetime.now().strftime("%Y-%m-%d %H:%M:%S")})                    
                 else:
                     AppLogger.StandLogger.warningLog('(系统初始化)网关IP已变化，但通过阿里云API失败')
 
@@ -121,18 +121,19 @@ class Worker(object):
 
     @classmethod
     def ScheduleWork(cls):
-        print(datetime.now())
-
+   
         while cls._retry > 0 and False == cls._is_inited:
             
             AppLogger.StandLogger.infoLog('系统再次尝试初始化工作')
             cls._is_inited = cls.WorkerInit()
             if False == cls._is_inited:
                 cls._retry -= 1
-                AppLogger.StandLogger.infoLog('系统将等待({second_}妙,将再重试{times_})再次尝试初始化工作'.format(second_ = 10,times = cls._retry))
+                if cls._retry !=0:
+                    AppLogger.StandLogger.warningLog('系统将等待({second_}妙,将再重试{times_})再次尝试初始化工作'.format(second_ = 10,times_ = cls._retry))
+                else:
+                    AppLogger.StandLogger.warningLog('系统初始化失败，会在下一轮询周期尝试再次初始化！')
                 time.sleep(10)
         cls._retry = 5
-        pass
 
         if True == cls._is_inited:
             sGatewayIp = cls.getGatewayIP()
@@ -143,7 +144,7 @@ class Worker(object):
                     bUpdated = cls._DDNS.update_record(cls._cfg['rr'],sGatewayIp)
 
                     if True == bUpdated:
-                        AppLogger.StandLogger.infoLog('(系统轮询)网关IP已变化，已通过阿里云API成功更新')
+                        AppLogger.StandLogger.infoLog('(系统轮询)网关IP已变化，已通过阿里云API成功更新(ip地址为:{ip_})'.format(ip_=sGatewayIp))
 
                         cls._last_ip = sGatewayIp
                         AppConfig.JsonConf().set({'last_ip':sGatewayIp})
@@ -153,77 +154,15 @@ class Worker(object):
                 else:
                     AppLogger.StandLogger.warningLog('(系统轮询)与阿里云API服务通信失败，请检查AppID/KeyKey或网络连接！')
             else:
-                AppLogger.StandLogger.infoLog('(系统轮询)网关IP无变化！')
-        '''     
-        dicAliDnsRecord = cls._DDNS.get_record_value(cls._cfg['rr'])
-        if dicAliDnsRecord != None:
-            if dicAliDnsRecord['Value'] != cls._cfg['last_ip']:
-                print(dicAliDnsRecord)
-        else
-        '''
-        #if WordsCheck.RegexChecker.judgeLegalIpv4(cls._cfg['last_ip']) and cls._cfg['last_ip'] != sGatewayIp:
-            #AppConfig.JsonConf().set({'last_ip':sGatewayIp})
-    
-    #@classmethod
-    #def scheduleWork(cls):
-        
-    
+                AppLogger.StandLogger.debugLog('(系统轮询)网关IP无变化！')
+    pass
 pass 
 
 def main():
     # 设置工作路径
     AppGlobal.setAppPath(os.path.split(os.path.realpath(__file__))[0])
-    #oAppConfig = AppConfig.JsonConf()
-
-    #_config = dicAppConfig = oAppConfig.load()
-    #print(_config)
-    #print('ok')
-    #print(datetime.now().replace( minute=3, second=0, microsecond=0))
-    #oTimer = TimerWorker.ScheduleTimer(datetime.now(),5,test,'p')
-    #oTimer.start()
-
     Worker.start()
-    #oDNSWorker = DDNS.DNSWorker(dicAppConfig['domain'],dicAppConfig['access_key_id'],dicAppConfig['access_Key_secret'],'cn-hangzhou')
-    
-    #AppLogger.StandLogger.debugLog('test')
-    # print(oDNSWorker.get_record_all())
-    # rc = oDNSWorker.update_record('pi','114.94.178.199')
-    # print(rc)
 pass
-
-def test(v):
-    print(str(datetime.now()) + str(v))
-
-def main1():
-    # a = (2,3)
-
-    # AppBase.appExit()
-    AppGlobal.setAppPath(os.path.split(os.path.realpath(__file__))[0])
-
-    oIpAddress = IpInfo.IpAddress()
-    print(oIpAddress.getGatewayIp())
-    #AppLogger.StandLogger.debugLog('debug-log')
-    #AppLogger.StandLogger.infoLog('info-log')
-    #AppLogger.StandLogger.warningLog('warning-log')
-
-    data = {
-        'interval':'60',
-        'last_ip':'',
-    }
-
-    oAppConfig = AppConfig.JsonConf()
-    #oAppConfig.store(data)
-    loadConfig = oAppConfig.load()
-    # print(loadConfig)
-    #oAppConfig.set({'last_ip':'114.114.114.114'})
-    
-    oDNSWorker = DDNS.DNSWorker("solab.com.cn",loadConfig['access_key_id'],loadConfig['access_Key_secret'],'cn-hangzhou')
-    # print(oDNSWorker.getAliyunDnsRecord())
-    # print(oDNSWorker.get_record_id())
-    print(oDNSWorker.get_record_value())
-    # print(oDNSWorker.get_record_value())
-
-    print(WordsCheck.RegexChecker.judgeLegalIpv4('114.114.112.111'))
 
 if __name__ == '__main__':
     # catch term signal

@@ -101,9 +101,10 @@ class DNSWorker(object):
             return False
         pass
         try:
-            #jsonReturn = json.load(self.client.do_action_with_exception(request))
-            jsonReturn = json.loads(self.client.do_action_with_exception(request))
-            return jsonReturn
+            # jsonReturn = json.load(self.client.do_action_with_exception(request))
+            # rc = self.client.do_action_with_exception(request)
+            if None != json.loads(self.client.do_action_with_exception(request)):
+                return True
         except:
             return False
         
