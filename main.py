@@ -166,6 +166,7 @@ pass
 
 if __name__ == '__main__':
     # catch term signal
-    signal.signal(signal.SIGTERM, AppBase.term_sig_handler)
-    signal.signal(signal.SIGINT, AppBase.term_sig_handler)
+    #signal.signal(signal.SIGTERM, AppBase.term_sig_handler)
+    #signal.signal(signal.SIGINT, AppBase.term_sig_handler)
+    
     main()

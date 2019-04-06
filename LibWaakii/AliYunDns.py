@@ -42,7 +42,8 @@ class DNSWorker(object):
                 self.region_id
             )
             self.record = self.getAliyunDnsRecord()
-        except:
+        except Exception as e:
+            print(e)
             self.record = None
 
     def getAliyunDnsRecord(self):
@@ -56,7 +57,8 @@ class DNSWorker(object):
             request.set_TypeKeyWord(self.record_type)
             r = self.client.do_action_with_exception(request)
             return json.loads(r)
-        except:
+        except Exception as e:
+            print(e)
             return None
 
     # 获取阿里云域名解析记录ID
