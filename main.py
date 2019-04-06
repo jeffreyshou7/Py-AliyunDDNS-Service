@@ -16,6 +16,7 @@ from LibWaakii import TimerWorker
 import json
 import LibWaakii.AliYunDns as DDNS
 import time
+import signal
 
 class Worker(object):
 
@@ -225,4 +226,7 @@ def main1():
     print(WordsCheck.RegexChecker.judgeLegalIpv4('114.114.112.111'))
 
 if __name__ == '__main__':
+    # catch term signal
+    signal.signal(signal.SIGTERM, AppBase.term_sig_handler)
+    signal.signal(signal.SIGINT, AppBase.term_sig_handler)
     main()
