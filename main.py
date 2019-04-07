@@ -55,7 +55,7 @@ class Worker(object):
         sGatewayIp = oIpAddress.getGatewayIp()
 
         if sGatewayIp != None:
-            AppLogger.StandLogger.infoLog('取得外网IP成功,ip地址为(' + sGatewayIp + ')')
+            AppLogger.StandLogger.debugLog('取得外网IP成功,ip地址为(' + sGatewayIp + ')')
             return sGatewayIp
         else:
             AppLogger.StandLogger.warningLog('取得外网IP失败，可能原因（网络未连接）')

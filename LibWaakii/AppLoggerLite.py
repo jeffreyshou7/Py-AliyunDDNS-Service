@@ -6,7 +6,7 @@ import LibWaakii.AppGlobal as AppGlobal
 class StandLogger(object):
 
 
-    def __init__(self, log_file = 'app.log'):
+    def __init__(self, log_level = logging.DEBUG, log_file = 'app.log'):
         self.oLogger = logging.getLogger('WaakiiDDNS')
         self.oLogger.setLevel(logging.DEBUG)
 
