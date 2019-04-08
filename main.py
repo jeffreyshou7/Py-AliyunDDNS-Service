@@ -136,7 +136,7 @@ class Worker(object):
 
         if True == cls._is_inited:
             sGatewayIp = cls.getGatewayIP()
-            if sGatewayIp != cls._last_ip:
+            if None != sGatewayIp and sGatewayIp != cls._last_ip:
                 bRc = cls.resetDDNS()
 
                 if True == bRc:
