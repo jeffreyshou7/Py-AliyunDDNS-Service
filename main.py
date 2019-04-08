@@ -16,6 +16,7 @@ from LibWaakii import TimerWorker
 import json
 import LibWaakii.AliYunDns as DDNS
 import time
+import signal
 
 class Worker(object):
 
@@ -54,7 +55,7 @@ class Worker(object):
         sGatewayIp = oIpAddress.getGatewayIp()
 
         if sGatewayIp != None:
-            AppLogger.StandLogger.infoLog('取得外网IP成功,ip地址为(' + sGatewayIp + ')')
+            AppLogger.StandLogger.debugLog('取得外网IP成功,ip地址为(' + sGatewayIp + ')')
             return sGatewayIp
         else:
             AppLogger.StandLogger.warningLog('取得外网IP失败，可能原因（网络未连接）')
@@ -164,4 +165,8 @@ def main():
 pass
 
 if __name__ == '__main__':
+    # catch term signal
+    #signal.signal(signal.SIGTERM, AppBase.term_sig_handler)
+    #signal.signal(signal.SIGINT, AppBase.term_sig_handler)
+    
     main()

@@ -6,9 +6,9 @@ import LibWaakii.AppGlobal as AppGlobal
 class StandLogger(object):
 
 
-    def __init__(self, log_file = 'app.log'):
+    def __init__(self, log_level = logging.INFO, log_file = 'app.log'):
         self.oLogger = logging.getLogger('WaakiiDDNS')
-        self.oLogger.setLevel(logging.DEBUG)
+        self.oLogger.setLevel(log_level)
 
         self.sFormatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
         # 文件日志
