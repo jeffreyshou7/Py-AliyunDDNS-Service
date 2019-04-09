@@ -25,3 +25,6 @@ sudo pip3 install bs4
 }
 
 ## app.log为本软件日志记录 在程序运行后会自动添加，建议先对软件运行目录进行写权限赋予
+
+## 注册成系统服务，请参考https://www.jianshu.com/p/7ea6a98f5eb8
+本项目目录中已有“aliyunddns.sh”的配置规范，请自行按需调整内容
